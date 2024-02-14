@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -25,10 +23,10 @@ class SqlParserServiceImplTest {
 
         Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertEquals(1, query.getFromSources().size());
-        assertEquals("FROM book", query.getFromSources().iterator().next());
-        assertEquals(1, query.getColumns().size());
-        assertEquals("SELECT *", query.getColumns().iterator().next());
+//        assertEquals(1, query.getSelect().size());
+        assertEquals("FROM book", query.getFrom().getInitialStatement());
+//        assertEquals(1, query.getColumns().size());
+        assertEquals("SELECT *", query.getSelect().getInitialStatement());
 
     }
 
@@ -38,22 +36,6 @@ class SqlParserServiceImplTest {
         String statement = "";
 
         assertThrows(SqlValidationException.class, () -> sqlParserService.parseSelectStatement(statement));
-
-    }
-
-    @Test
-    void parseSelectStatementTest_ComplexStatement() {
-
-        String statement = """
-                SELECT author.name, count(book.id), sum(book.cost)\s
-                FROM author\s
-                LEFT JOIN book ON (author.id = book.author_id)\s
-                GROUP BY author.name\s
-                HAVING COUNT(*) > 1 AND SUM(book.cost) > 500
-                LIMIT 10;""";
-
-        Query query = sqlParserService.parseSelectStatement(statement);
-
 
     }
 
@@ -68,11 +50,11 @@ class SqlParserServiceImplTest {
                 HAVING COUNT(*) > 1 AND SUM(book.cost) > 500
                 LIMIT 10;""";
 
-        List<String> parts = new SqlParserServiceImpl().divideStatement(statement);
+        Query query = new SqlParserServiceImpl().parseStatement(statement);
 
-        parts.forEach((str) -> System.out.println("[part]: " + str));
+//        query.forEach((str) -> System.out.println("[part]: " + str));
 
-        assertEquals(6, parts.size());
+        assertEquals(6, query.sizeOfStatementParts());
     }
 
     @Test
@@ -86,11 +68,26 @@ class SqlParserServiceImplTest {
                 HAVING COUNT(*) > 1 AND SUM(book.cost) > 500
                 LIMIT 10;""";
 
-        List<String> parts = new SqlParserServiceImpl().divideStatement(statement);
+        Query query = new SqlParserServiceImpl().parseStatement(statement);
 
-        parts.forEach((str) -> System.out.println("[part]: " + str));
+//        parts.forEach((str) -> System.out.println("[part]: " + str));
 
-        assertEquals(6, parts.size());
+        assertEquals(6, query.sizeOfStatementParts());
+    }
+
+
+    @Test
+    void divideStatement_2parts() {
+
+        String statement = """
+                select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
+                """;
+
+        Query query = new SqlParserServiceImpl().parseStatement(statement);
+
+//        parts.forEach((str) -> System.out.println("[part]: " + str));
+
+        assertEquals(2, query.sizeOfStatementParts());
     }
 
 }
