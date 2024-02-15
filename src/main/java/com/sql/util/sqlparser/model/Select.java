@@ -16,7 +16,7 @@ public class Select extends QueryComponent {
 
     public void addColumn(Column column) {
         if (columns == null) {
-            columns = new ArrayList<Column>();
+            columns = new ArrayList<>();
         }
         columns.add(column);
     }

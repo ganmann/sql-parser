@@ -1,10 +1,9 @@
 package com.sql.util.sqlparser.utils;
 
-
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
 import lombok.experimental.UtilityClass;
 
-import java.util.ArrayList;
+
 import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
