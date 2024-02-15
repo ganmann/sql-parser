@@ -2,9 +2,11 @@ package com.sql.util.sqlparser.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class Column extends QueryComponent {
 
     public Column(String initialStatement) {
@@ -12,7 +14,7 @@ public class Column extends QueryComponent {
     }
 
     private String table;
-    private String column;
+    private String columnName;
     private String alias;
     private NestedQuery nestedQuery;
 

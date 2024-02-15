@@ -1,6 +1,7 @@
 package com.sql.util.sqlparser.service.impl;
 
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
+import com.sql.util.sqlparser.model.Column;
 import com.sql.util.sqlparser.model.Query;
 import com.sql.util.sqlparser.service.SqlParserService;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ class SqlParserServiceImplTest {
                 HAVING COUNT(*) > 1 AND SUM(book.cost) > 500
                 LIMIT 10;""";
 
-        Query query = new SqlParserServiceImpl().parseStatement(statement);
+        Query query = new SqlParserServiceImpl().parse(statement);
 
 //        query.forEach((str) -> System.out.println("[part]: " + str));
 
@@ -68,7 +69,7 @@ class SqlParserServiceImplTest {
                 HAVING COUNT(*) > 1 AND SUM(book.cost) > 500
                 LIMIT 10;""";
 
-        Query query = new SqlParserServiceImpl().parseStatement(statement);
+        Query query = new SqlParserServiceImpl().parse(statement);
 
 //        parts.forEach((str) -> System.out.println("[part]: " + str));
 
@@ -83,11 +84,54 @@ class SqlParserServiceImplTest {
                 select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
                 """;
 
-        Query query = new SqlParserServiceImpl().parseStatement(statement);
-
-//        parts.forEach((str) -> System.out.println("[part]: " + str));
+        Query query = new SqlParserServiceImpl().parse(statement);
 
         assertEquals(2, query.sizeOfStatementParts());
+    }
+
+    @Test
+    void divideStatement_nestedColumn_hasNestedColumn() {
+
+        String statement = """
+                select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
+                """;
+
+        Query query = new SqlParserServiceImpl().parse(statement);
+
+        assertEquals(2, query.sizeOfStatementParts());
+        assertEquals(2, query.getSelect().getColumns().size());
+        assertEquals(1, query.getSelect().getColumns().stream().filter(Column::isNestedQuery).count());
+        assertEquals(1, query.getSelect().getColumns().stream().filter(Column::isNestedQuery).findFirst().get().getNestedQuery().getQuery().getSelect().getColumns().size());
+    }
+
+    @Test
+    void divideStatement_nestedColumnHas2Columns_hasNestedColumn() {
+
+        String statement = """
+                select a_alias.id, (select b.id,b.name from b where b.id=a_alias.id) t1 from (select * from A) a_alias
+                """;
+
+        Query query = new SqlParserServiceImpl().parse(statement);
+
+        assertEquals(2, query.sizeOfStatementParts());
+        assertEquals(2, query.getSelect().getColumns().size());
+        assertEquals(1, query.getSelect().getColumns().stream().filter(Column::isNestedQuery).count());
+        assertEquals(2, query.getSelect().getColumns().stream().filter(Column::isNestedQuery).findFirst().get().getNestedQuery().getQuery().getSelect().getColumns().size());
+    }
+
+    @Test
+    void divideStatement_nestedColumnAliasT1_true() {
+
+        String statement = """
+                select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
+                """;
+
+        Query query = new SqlParserServiceImpl().parse(statement);
+
+        assertEquals(2, query.sizeOfStatementParts());
+        assertEquals(2, query.getSelect().getColumns().size());
+        assertEquals(1, query.getSelect().getColumns().stream().filter(Column::isNestedQuery).count());
+        assertEquals("t1", query.getSelect().getColumns().stream().filter(Column::isNestedQuery).findFirst().get().getAlias());
     }
 
 }

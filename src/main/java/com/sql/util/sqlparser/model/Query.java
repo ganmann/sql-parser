@@ -1,10 +1,11 @@
 package com.sql.util.sqlparser.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class Query {
     private String initialStatement;
     private Select select;
@@ -17,22 +18,8 @@ public class Query {
     private Integer limit;
     private Integer offset;
 
-    public void setQueryElement(QueryComponent queryComponent) {
-        if (queryComponent instanceof Select) {
-            setSelect((Select) queryComponent);
-        } else if (queryComponent instanceof From) {
-            setFrom((From) queryComponent);
-        } else if (queryComponent instanceof Join) {
-            setJoin((Join) queryComponent);
-        } else if (queryComponent instanceof WhereClause) {
-            setWhereClause((WhereClause) queryComponent);
-        } else if (queryComponent instanceof Having) {
-            setHaving((Having) queryComponent);
-        } else if (queryComponent instanceof GroupBy) {
-            setGroupBy((GroupBy) queryComponent);
-        } else if (queryComponent instanceof Sort) {
-            setSortColumns((Sort) queryComponent);
-        }
+    public Query(String initialQuery) {
+        this.initialStatement = initialQuery;
     }
 
     public int sizeOfStatementParts() {
