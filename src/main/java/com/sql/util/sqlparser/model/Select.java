@@ -8,21 +8,21 @@ import java.util.List;
 @ToString
 public class Select extends QueryComponent {
 
-    private List<Column> columns;
+    private List<SelectExpression> selectExpressions;
 
     public Select(String initialStatement) {
         super(initialStatement);
     }
 
-    public void addColumn(Column column) {
-        if (columns == null) {
-            columns = new ArrayList<>();
+    public void addSelectExpression(SelectExpression selectExpression) {
+        if (selectExpressions == null) {
+            selectExpressions = new ArrayList<>();
         }
-        columns.add(column);
+        selectExpressions.add(selectExpression);
     }
 
-    public List<Column> getColumns() {
-        return columns;
+    public List<SelectExpression> getSelectExpressions() {
+        return selectExpressions;
     }
 
 }

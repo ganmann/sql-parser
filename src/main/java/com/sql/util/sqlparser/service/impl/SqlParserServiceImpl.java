@@ -1,9 +1,7 @@
 package com.sql.util.sqlparser.service.impl;
 
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
-import com.sql.util.sqlparser.model.Column;
-import com.sql.util.sqlparser.model.Query;
-import com.sql.util.sqlparser.model.Select;
+import com.sql.util.sqlparser.model.*;
 import com.sql.util.sqlparser.service.SqlParserService;
 import com.sql.util.sqlparser.utils.QueryBuilder;
 import com.sql.util.sqlparser.utils.SQLUtils;
@@ -110,8 +108,8 @@ public class SqlParserServiceImpl implements SqlParserService {
     }
 
     private void parseStatementComponents(QueryBuilder queryBuilder) {
-        parseSelect(queryBuilder.getQuery());
-        // parseFromClause
+        parseSelectPart(queryBuilder.getQuery());
+        parseFromClause(queryBuilder.getQuery());
         // parseJoinClauses
         // parseWhereClause
         // parseGroupClause
@@ -119,7 +117,7 @@ public class SqlParserServiceImpl implements SqlParserService {
         // parseOrderClause
     }
 
-    private void parseSelect(Query query) {
+    private void parseSelectPart(Query query) {
 
         if (query.getSelect() == null || query.getSelect().getInitialStatement() == null || query.getSelect().getInitialStatement().isEmpty()) {
             return;
@@ -146,13 +144,49 @@ public class SqlParserServiceImpl implements SqlParserService {
         parseColumnAndAddToSelect(select, statement.substring(pointer, i));
     }
 
+    private void parseFromClause(Query query) {
+        if (query.getFrom() == null || query.getFrom().getInitialStatement() == null || query.getFrom().getInitialStatement().isEmpty()) {
+            return;
+        }
+
+        From from = query.getFrom();
+        String statement = from.getInitialStatement().trim();
+
+        int i = 4;
+        int pointer = i;
+        char currentChar;
+
+        while (i < statement.length()) {
+            currentChar = statement.charAt(i);
+
+            if (currentChar == ',') {
+                parseTableAndAddToSelect(from, statement.substring(pointer, i));
+                pointer = i + 1;
+            } else if (OPEN_CHARACTERS.contains(currentChar)) {
+                i = goToCloseCharacter(statement, i);
+            }
+            i++;
+        }
+        parseTableAndAddToSelect(from, statement.substring(pointer, i));
+
+        System.out.println("query = " + query.getFrom().getInitialStatement());
+    }
+
     private void parseColumnAndAddToSelect(Select select, String columnStatement) {
-        Column column = QueryBuilder.parseColumn(columnStatement);
+        SelectExpression column = QueryBuilder.parseColumn(columnStatement);
         if (column.isNestedQuery()) {
             Query nestedQuery = parse(column.getNestedQuery().getInitialStatement());
-            column.getNestedQuery().setQuery(nestedQuery);
+            column.setNestedQuery(nestedQuery);
         }
-        select.addColumn(column);
+        select.addSelectExpression(column);
+    }
+
+    private void parseTableAndAddToSelect(From from, String columnStatement) {
+        Table table = QueryBuilder.parseFrom(columnStatement);
+        if (table.isNestedQuery()) {
+            table.setNestedQuery(parse(table.getNestedQuery().getInitialStatement()));
+        }
+        from.addTable(table);
     }
 
 }

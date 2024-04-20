@@ -12,7 +12,7 @@ public class QueryBuilder {
 
     private static final AbstractQueryElementFactory queryElementFactory = new QueryElementFactory();
 
-    private Query query;
+    private final Query query;
 
     public Query getQuery() {
         return query;
@@ -50,29 +50,78 @@ public class QueryBuilder {
         }
     }
 
-    public static Column parseColumn(String queryPart) {
-        Column column = new Column(queryPart);
+    public static SelectExpression parseColumn(String queryPart) {
+        SelectExpression selectExpression = new SelectExpression(queryPart);
         if (SQLUtils.checkSelectFromAll(queryPart)) {
+            Column column = new Column();
             column.setColumnName("*");
-            return column;
+            selectExpression.setColumn(column);
+            return selectExpression;
         }
         if (SQLUtils.isNestedQuery(queryPart)) {
-            int openSymbol = queryPart.indexOf("(");
-            int closeSymbol = queryPart.lastIndexOf(")");
-            NestedQuery nestedQuery = new NestedQuery(queryPart.substring(openSymbol + 1, closeSymbol));
-            column.setNestedQuery(nestedQuery);
-            column.setAlias(queryPart.substring(closeSymbol + 1).trim());
-            return column;
-        }
-        if (queryPart.trim().matches("^\\b\\w+\\b$")) {
-            column.setColumnName(queryPart.trim());
-            return column;
+            selectExpression.setNestedQuery(SQLUtils.parseNestedQuery(queryPart));
+            selectExpression.setAlias(SQLUtils.parseAlias(queryPart));
+            return selectExpression;
         }
 
-        // todo
-        // 1. check tbl.column pattern
-        // 2. check SUM|AVG|COUNT|MIN|MAX patterns
+        queryPart = queryPart.trim();
+        // check 'column' pattern
+        if (queryPart.matches("^\\b\\w+\\b$")) {
+            Column column = new Column();
+            column.setColumnName(queryPart.trim());
+            selectExpression.setColumn(column);
+            return selectExpression;
+        }
+
+        // check 'tbl1.column' pattern
+        if (queryPart.matches("^\\b\\w+\\.\\w+\\b$")) {
+            Column column = new Column();
+            String[] parts = queryPart.trim().split("\\.");
+            column.setTable(parts[0]);
+            column.setColumnName(parts[1]);
+            selectExpression.setColumn(column);
+            return selectExpression;
+        }
+
+        // check function
+        if (queryPart.matches("\\b\\w+\\([^)].+\\)")) {
+            Column column = new Column();
+            String[] parts = queryPart.trim().split("\\.");
+            column.setTable(parts[0]);
+            column.setColumnName(parts[1]);
+            selectExpression.setColumn(column);
+            return selectExpression;
+        }
+
         // 3. check Literals pattern
-        return column;
+        return selectExpression;
+    }
+
+    public static Table parseFrom(String queryPart) {
+        Table table = new Table(queryPart);
+
+        // check nested query
+        if (SQLUtils.isNestedQuery(queryPart)) {
+            table.setNestedQuery(SQLUtils.parseNestedQuery(queryPart));
+            table.setAlias(SQLUtils.parseAlias(queryPart));
+            return table;
+        }
+
+        queryPart = queryPart.trim();
+        // check 'table'
+        if (queryPart.matches("^\\b\\w+\\b$")) {
+            table.setTableName(queryPart.trim());
+            return table;
+        }
+
+        // check 'table t1'
+        if (queryPart.matches("^\\b\\w+\\s+\\w+\\b$")) {
+            String[] parts = queryPart.split("\\s+");
+            table.setTableName(parts[0]);
+            table.setAlias(parts[1]);
+            return table;
+        }
+
+        return table;
     }
 }

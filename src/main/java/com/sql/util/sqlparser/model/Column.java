@@ -1,12 +1,12 @@
 package com.sql.util.sqlparser.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
+@NoArgsConstructor
 public class Column extends QueryComponent {
 
     public Column(String initialStatement) {
@@ -15,10 +15,5 @@ public class Column extends QueryComponent {
 
     private String table;
     private String columnName;
-    private String alias;
-    private NestedQuery nestedQuery;
 
-    public boolean isNestedQuery() {
-        return nestedQuery != null;
-    }
 }
