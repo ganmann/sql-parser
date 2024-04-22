@@ -15,7 +15,8 @@ public class SelectExpression extends QueryComponent {
     private Column column;
     private Query nestedQuery;
     private String alias;
-    private String function;
+    private boolean isFunction;
+    private boolean isLiteral;
 
     public boolean isNestedQuery() {
         return nestedQuery != null;

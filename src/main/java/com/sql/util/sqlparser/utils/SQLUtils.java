@@ -1,10 +1,12 @@
 package com.sql.util.sqlparser.utils;
 
+import com.sql.util.sqlparser.constants.SQLConstants;
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
 import com.sql.util.sqlparser.model.Query;
 import lombok.experimental.UtilityClass;
 
 
+import java.util.Stack;
 import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +27,24 @@ public class SQLUtils {
 
         return matcher.matches();
     };
+
+    // skip constructions like (...)  "..."
+    public static int goToCloseCharacter(String statement, int i) {
+        Stack<Character> openCharactersStack = new Stack<>();
+        char currentChar = statement.charAt(i);
+        openCharactersStack.push(currentChar);
+        while (openCharactersStack.size() > 0 && i < statement.length() - 1) {
+            currentChar = statement.charAt(i+1);
+            if (SQLConstants.OPEN_CHARACTERS.contains(currentChar)) {
+                openCharactersStack.push(currentChar);
+            }
+            if (SQLConstants.OPEN_CLOSED_CHARACTER.get(openCharactersStack.peek()).equals(currentChar)) {
+                openCharactersStack.pop();
+            }
+            i++;
+        }
+        return i;
+    }
 
     public Integer parseInteger(String queryPart) {
         Matcher matcher = Pattern.compile("\\d+").matcher(queryPart);
@@ -54,10 +74,10 @@ public class SQLUtils {
         return queryPart.substring(closeSymbol + 1).trim();
     }
 
-    public Query parseNestedQuery(String queryPart) {
+    public String substrNestedQuery(String queryPart) {
         int openSymbol = queryPart.indexOf("(");
         int closeSymbol = queryPart.lastIndexOf(")");
-        return new Query(queryPart.substring(openSymbol + 1, closeSymbol));
+        return queryPart.substring(openSymbol + 1, closeSymbol);
 
     }
 

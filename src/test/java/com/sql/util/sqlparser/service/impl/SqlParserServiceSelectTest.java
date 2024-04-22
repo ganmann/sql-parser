@@ -4,7 +4,6 @@ import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
 import com.sql.util.sqlparser.model.Query;
 import com.sql.util.sqlparser.model.SelectExpression;
 import com.sql.util.sqlparser.service.SqlParserService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class SqlParserServiceImplTest {
+class SqlParserServiceSelectTest {
 
 
     @Autowired
@@ -89,7 +88,7 @@ class SqlParserServiceImplTest {
     }
 
     @Test
-    void divideStatement_nestedColumn_hasNestedColumn() {
+    void parseStatement_withNestedColumn_hasNestedColumn() {
 
         String statement = """
                 select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
@@ -104,7 +103,7 @@ class SqlParserServiceImplTest {
     }
 
     @Test
-    void divideStatement_nestedColumnHas2Columns_hasNestedColumn() {
+    void parseStatement_withNestedQueryWith2Columns_hasNestedColumnWith2Columns() {
 
         String statement = """
                 select a_alias.id, (select b.id,b.name from b where b.id=a_alias.id) t1 from (select * from A) a_alias
@@ -119,7 +118,7 @@ class SqlParserServiceImplTest {
     }
 
     @Test
-    void divideStatement_nestedColumnAliasT1_true() {
+    void parseStatement_withNestedQueryTableIsAliasT1_true() {
 
         String statement = """
                 select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
@@ -133,64 +132,42 @@ class SqlParserServiceImplTest {
         assertEquals("t1", query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).findFirst().get().getAlias());
     }
 
-
-    // From part tests
-
     @Test
-    void divideStatement_SelectFrom_TableAuthor() {
-
+    void parseStatement_FunctionInSelect_true() {
         String statement = """
-                SELECT author.name, count(book.id), sum(book.cost)\s
-                FROM author
+                select count(*) from A
                 """;
 
         Query query = new SqlParserServiceImpl().parse(statement);
+        assertTrue(query.getSelect().getSelectExpressions().stream().findFirst().map(SelectExpression::isFunction).orElse(false));
 
-        assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
-    }
-
-    // fix case with ;
-    @Test
-    @Disabled
-    void divideStatement_SelectFromWithComma_TableAuthor() {
-
-        String statement = """
-                SELECT author.name, count(book.id), sum(book.cost)\s
-                FROM author;
-                """;
-
-        Query query = new SqlParserServiceImpl().parse(statement);
-
-        assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
     }
 
     @Test
-    void divideStatement_SelectFrom_TableAuthorAliasAuth() {
+    // todo check failed
+    void parseStatement_LiteralStringInSelect_true() {
 
         String statement = """
-                SELECT author.name, count(book.id), sum(book.cost)\s
-                FROM author auth
+                select 'first',"second" from table t
                 """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
-        assertEquals("auth", query.getFrom().getTables().iterator().next().getAlias());
+        assertEquals(2, query.getSelect().getSelectExpressions().size());
+        query.getSelect().getSelectExpressions().forEach(selectExpression -> assertTrue(selectExpression.isLiteral()));
+
     }
 
     @Test
-    void divideStatement_SelectFromNested_WithAlias() {
-
+    void parseStatement_LiteralNumberInSelect_true() {
         String statement = """
-                select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
+                select 0, +78, 88.99 from table t
                 """;
 
         Query query = new SqlParserServiceImpl().parse(statement);
 
-        assertTrue(query.getFrom().getTables().iterator().next().isNestedQuery());
-        assertEquals("a_alias", query.getFrom().getTables().iterator().next().getAlias());
-        assertEquals("A", query.getFrom().getTables().iterator().next().getNestedQuery().getFrom().getTables().iterator().next().getTableName());
-
+        assertEquals(3, query.getSelect().getSelectExpressions().size());
+        query.getSelect().getSelectExpressions().forEach(selectExpression -> assertTrue(selectExpression.isLiteral()));
     }
 
 }

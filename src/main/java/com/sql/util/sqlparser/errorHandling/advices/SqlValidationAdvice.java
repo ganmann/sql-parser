@@ -1,5 +1,6 @@
-package com.sql.util.sqlparser.errorHandling.exceptions;
+package com.sql.util.sqlparser.errorHandling.advices;
 
+import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

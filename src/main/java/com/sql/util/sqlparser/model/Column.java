@@ -12,7 +12,6 @@ public class Column extends QueryComponent {
     public Column(String initialStatement) {
         super(initialStatement);
     }
-
     private String table;
     private String columnName;
 
