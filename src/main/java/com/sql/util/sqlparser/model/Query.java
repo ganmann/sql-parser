@@ -10,7 +10,7 @@ public class Query {
     private String initialStatement;
     private Select select;
     private From from;
-    private Join join;
+    private Join joins;
     private WhereClause whereClause;
     private GroupBy groupBy;
     private Having having;
@@ -26,7 +26,7 @@ public class Query {
         int size = 0;
         if (select != null) size++;
         if (from != null) size++;
-        if (join != null) size++;
+        if (joins != null) size++;
         if (whereClause != null) size++;
         if (groupBy != null) size++;
         if (having != null) size++;

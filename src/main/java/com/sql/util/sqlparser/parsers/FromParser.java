@@ -1,14 +1,18 @@
-package com.sql.util.sqlparser.utils;
+package com.sql.util.sqlparser.parsers;
 
 import com.sql.util.sqlparser.model.From;
 import com.sql.util.sqlparser.model.Query;
 import com.sql.util.sqlparser.model.QueryComponent;
 import com.sql.util.sqlparser.model.Table;
+import com.sql.util.sqlparser.utils.SQLUtils;
+
+import java.util.List;
 
 public class FromParser extends Parser {
 
     public FromParser() {
         lengthOfKeyword = 4;
+        tokens = List.of(",");
     }
 
     @Override

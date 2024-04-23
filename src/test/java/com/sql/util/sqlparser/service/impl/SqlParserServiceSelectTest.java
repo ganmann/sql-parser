@@ -1,12 +1,17 @@
 package com.sql.util.sqlparser.service.impl;
 
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
+import com.sql.util.sqlparser.model.From;
 import com.sql.util.sqlparser.model.Query;
 import com.sql.util.sqlparser.model.SelectExpression;
+import com.sql.util.sqlparser.model.Table;
 import com.sql.util.sqlparser.service.SqlParserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -144,24 +149,63 @@ class SqlParserServiceSelectTest {
     }
 
     @Test
-    // todo check failed
-    void parseStatement_LiteralStringInSelect_true() {
+    void parseStatement_quoteLiteralInSelect_true() {
 
         String statement = """
-                select 'first',"second" from table t
+                select 'first' from users t
                 """;
 
         Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertEquals(2, query.getSelect().getSelectExpressions().size());
-        query.getSelect().getSelectExpressions().forEach(selectExpression -> assertTrue(selectExpression.isLiteral()));
+        assertEquals(1, query.getSelect().getSelectExpressions().size());
+        assertTrue(query.getSelect().getSelectExpressions().stream().findFirst().map(SelectExpression::isLiteral).orElse(false));
+    }
 
+    @Test
+    // todo check failed
+    void parseStatement_doubleQuoteLiteralInSelect_true() {
+
+        String statement = """
+                select "first" from users t
+                """;
+
+        Query query = sqlParserService.parseSelectStatement(statement);
+
+        assertEquals(1, query.getSelect().getSelectExpressions().size());
+        assertTrue(query.getSelect().getSelectExpressions().stream().findFirst().map(SelectExpression::isLiteral).orElse(false));
+    }
+
+    @Test
+    void parseStatement_quoteLiteralWithKeyword_literalSelectExpression() {
+
+        String statement = """
+                select "from" from users t
+                """;
+
+        Query query = sqlParserService.parseSelectStatement(statement);
+
+        assertEquals(1, query.getSelect().getSelectExpressions().size());
+        assertTrue(query.getSelect().getSelectExpressions().stream().findFirst().map(SelectExpression::isLiteral).orElse(false));
+    }
+
+    @Test
+    void parseStatement_quoteLiteralWithKeyword_tableUsersWithAliasT() {
+
+        String statement = """
+                select "from" from users t
+                """;
+
+        Query query = sqlParserService.parseSelectStatement(statement);
+
+        assertEquals(1, Optional.ofNullable(query.getFrom()).map(From::getTables).map(List::size).orElse(0));
+        assertEquals("users", query.getFrom().getTables().stream().findFirst().map(Table::getTableName).orElse(""));
+        assertEquals("t", query.getFrom().getTables().stream().findFirst().map(Table::getAlias).orElse(""));
     }
 
     @Test
     void parseStatement_LiteralNumberInSelect_true() {
         String statement = """
-                select 0, +78, 88.99 from table t
+                select 0, +78, 88.99 from users t
                 """;
 
         Query query = new SqlParserServiceImpl().parse(statement);

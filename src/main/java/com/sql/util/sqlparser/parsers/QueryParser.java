@@ -1,9 +1,10 @@
-package com.sql.util.sqlparser.utils;
+package com.sql.util.sqlparser.parsers;
 
 import com.sql.util.sqlparser.constants.SQLConstants;
 import com.sql.util.sqlparser.model.*;
 import com.sql.util.sqlparser.model.factory.AbstractQueryElementFactory;
 import com.sql.util.sqlparser.model.factory.QueryElementFactory;
+import com.sql.util.sqlparser.utils.SQLUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,8 +50,8 @@ public class QueryParser {
                 subpartParsers.add(new FromParser());
             }
             case Join join -> {
-                query.setJoin(join);
-                subpartParsers.add(new JoinParser());
+                query.setJoins(join);
+                subpartParsers.add(new JoinParser(join));
             }
             case WhereClause whereClause -> {
                 query.setWhereClause(whereClause);

@@ -3,7 +3,7 @@ package com.sql.util.sqlparser.service.impl;
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
 import com.sql.util.sqlparser.model.*;
 import com.sql.util.sqlparser.service.SqlParserService;
-import com.sql.util.sqlparser.utils.QueryParser;
+import com.sql.util.sqlparser.parsers.QueryParser;
 import com.sql.util.sqlparser.utils.SQLUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;

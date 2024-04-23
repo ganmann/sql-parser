@@ -1,12 +1,19 @@
-package com.sql.util.sqlparser.utils;
+package com.sql.util.sqlparser.parsers;
 
 import com.sql.util.sqlparser.constants.SQLConstants;
 import com.sql.util.sqlparser.model.Query;
 import com.sql.util.sqlparser.model.QueryComponent;
+import com.sql.util.sqlparser.utils.SQLUtils;
+
+
+import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class Parser {
 
     int lengthOfKeyword;
+
+    List<String> tokens;
 
     protected abstract QueryComponent selectQueryComponent(Query query);
 
@@ -22,15 +29,23 @@ public abstract class Parser {
         String statement = queryComponent.getInitialStatement().trim();
 
         int i = lengthOfKeyword;
-        int pointer = i;
+
+        // todo refactor bad Dependency Inversion
+        int pointer = this instanceof JoinParser ? 0 : i ;
         char currentChar;
 
         while (i < statement.length()) {
-            currentChar = statement.charAt(i);
 
-            if (currentChar == ',') {
+            currentChar = statement.charAt(i);
+            int finalI = i;
+            String matchedPattern = tokens.stream()
+                    .filter(token -> SQLUtils.checkTokenMatch.test(statement.substring(finalI), token))
+                    .findFirst().orElse("");
+
+            if (!matchedPattern.isEmpty()) {
                 parseQueryComponentElement(queryComponent, statement.substring(pointer, i));
                 pointer = i + 1;
+                i += matchedPattern.length();
             } else if (SQLConstants.OPEN_CHARACTERS.contains(currentChar)) {
                 i = SQLUtils.goToCloseCharacter(statement, i);
             }

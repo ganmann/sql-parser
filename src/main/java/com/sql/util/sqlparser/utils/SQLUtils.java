@@ -2,7 +2,6 @@ package com.sql.util.sqlparser.utils;
 
 import com.sql.util.sqlparser.constants.SQLConstants;
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
-import com.sql.util.sqlparser.model.Query;
 import lombok.experimental.UtilityClass;
 
 
@@ -19,7 +18,12 @@ public class SQLUtils {
         token = token.toLowerCase();
         StringBuilder patternBuilder = new StringBuilder("\\s*");
         for (String patternWord : token.split("\\s+")) {
-            patternBuilder.append(patternWord).append("\\s+");
+            patternBuilder.append(patternWord);
+
+            // complex logic - rewrite
+            if (token.length() > 1) {
+                patternBuilder.append("\\s+");
+            }
         }
         patternBuilder.append(".*");
         Pattern pattern = Pattern.compile(patternBuilder.toString(), Pattern.DOTALL);
@@ -32,14 +36,17 @@ public class SQLUtils {
     public static int goToCloseCharacter(String statement, int i) {
         Stack<Character> openCharactersStack = new Stack<>();
         char currentChar = statement.charAt(i);
+        char lastOpenChar = currentChar;
         openCharactersStack.push(currentChar);
         while (openCharactersStack.size() > 0 && i < statement.length() - 1) {
             currentChar = statement.charAt(i+1);
-            if (SQLConstants.OPEN_CHARACTERS.contains(currentChar)) {
+            if (!SQLConstants.OPEN_CLOSED_SAME_CHARACTERS.contains(lastOpenChar) && SQLConstants.OPEN_CHARACTERS.contains(currentChar)) {
                 openCharactersStack.push(currentChar);
+                lastOpenChar = currentChar;
             }
-            if (SQLConstants.OPEN_CLOSED_CHARACTER.get(openCharactersStack.peek()).equals(currentChar)) {
+            if (SQLConstants.OPEN_CLOSED_CHARACTER_MAP.get(openCharactersStack.peek()).equals(currentChar)) {
                 openCharactersStack.pop();
+                lastOpenChar = openCharactersStack.empty() ? Character.MIN_VALUE : openCharactersStack.peek();
             }
             i++;
         }

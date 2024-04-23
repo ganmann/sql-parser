@@ -1,11 +1,15 @@
-package com.sql.util.sqlparser.utils;
+package com.sql.util.sqlparser.parsers;
 
 import com.sql.util.sqlparser.model.*;
+import com.sql.util.sqlparser.utils.SQLUtils;
+
+import java.util.List;
 
 public class SelectParser extends Parser {
 
     public SelectParser() {
         lengthOfKeyword = 6;
+        tokens = List.of(",");
     }
 
     @Override
