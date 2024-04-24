@@ -9,6 +9,7 @@ public class SelectParser extends Parser {
 
     public SelectParser() {
         lengthOfKeyword = 6;
+        startElementPointer = 6;
         tokens = List.of(",");
     }
 
@@ -31,7 +32,7 @@ public class SelectParser extends Parser {
             return selectExpression;
         }
         if (SQLUtils.isNestedQuery(queryPart)) {
-            selectExpression.setNestedQuery(parseNestedQuery(SQLUtils.substrNestedQuery(queryPart)));
+            selectExpression.setNestedQuery(SQLUtils.parseNestedQuery(SQLUtils.substrNestedQuery(queryPart)));
             selectExpression.setAlias(SQLUtils.parseAlias(queryPart));
             return selectExpression;
         }
@@ -40,7 +41,6 @@ public class SelectParser extends Parser {
 
         // check function
         if (queryPart.matches("^\\b\\w+\\(.\\)$")) {
-            // todo parse inner column
             selectExpression.setFunction(true);
             return selectExpression;
         }
@@ -51,24 +51,11 @@ public class SelectParser extends Parser {
             return selectExpression;
         }
 
-        // check 'column' pattern
-        if (queryPart.matches("^\\b\\w+\\b$")) {
-            Column column = new Column();
-            column.setColumnName(queryPart.trim());
-            selectExpression.setColumn(column);
-            return selectExpression;
-        }
+        Column column = SQLUtils.parseColumn(queryPart);
 
-        // check 'tbl1.column' pattern
-        if (queryPart.matches("^\\b\\w+\\.\\w+\\b$")) {
-            Column column = new Column();
-            String[] parts = queryPart.trim().split("\\.");
-            column.setTable(parts[0]);
-            column.setColumnName(parts[1]);
+        if (column != null) {
             selectExpression.setColumn(column);
-            return selectExpression;
         }
-
 
         return selectExpression;
     }

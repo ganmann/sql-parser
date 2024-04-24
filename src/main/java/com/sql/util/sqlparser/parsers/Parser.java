@@ -7,12 +7,11 @@ import com.sql.util.sqlparser.utils.SQLUtils;
 
 
 import java.util.List;
-import java.util.stream.Stream;
 
 public abstract class Parser {
 
     int lengthOfKeyword;
-
+    int startElementPointer;
     List<String> tokens;
 
     protected abstract QueryComponent selectQueryComponent(Query query);
@@ -29,9 +28,7 @@ public abstract class Parser {
         String statement = queryComponent.getInitialStatement().trim();
 
         int i = lengthOfKeyword;
-
-        // todo refactor bad Dependency Inversion
-        int pointer = this instanceof JoinParser ? 0 : i ;
+        int pointer = startElementPointer;
         char currentChar;
 
         while (i < statement.length()) {
@@ -54,10 +51,4 @@ public abstract class Parser {
         parseQueryComponentElement(queryComponent, statement.substring(pointer, i));
     }
 
-    final Query parseNestedQuery(String nestedQuery) {
-        QueryParser parser = new QueryParser(nestedQuery);
-        parser.parseHighLevel();
-        parser.parseQueryComponents();
-        return parser.getQuery();
-    }
 }

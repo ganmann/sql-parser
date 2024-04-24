@@ -1,7 +1,10 @@
 package com.sql.util.sqlparser.model;
 
+import com.sql.util.sqlparser.model.enums.JoinType;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 
 @Getter
@@ -12,9 +15,9 @@ public class JoinClause extends QueryComponent{
         super(statement);
     }
 
-    String joinType;
+    JoinType joinType;
 
     Table table;
 
-    String joinKeys;
+    Predicate joinKeys;
 }

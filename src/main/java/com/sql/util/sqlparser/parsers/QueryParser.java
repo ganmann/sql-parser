@@ -51,7 +51,7 @@ public class QueryParser {
             }
             case Join join -> {
                 query.setJoins(join);
-                subpartParsers.add(new JoinParser(join));
+                subpartParsers.add(new JoinParser(join.getInitialStatement()));
             }
             case WhereClause whereClause -> {
                 query.setWhereClause(whereClause);
@@ -72,7 +72,7 @@ public class QueryParser {
 
     public void parseHighLevel() {
 
-        String statement = query.getInitialStatement();
+        String statement = query.getInitialStatement().replaceAll("\\s+", " ");
         String partKey = "select";
         int i = 6;
         int pointer = 0;

@@ -162,7 +162,6 @@ class SqlParserServiceSelectTest {
     }
 
     @Test
-    // todo check failed
     void parseStatement_doubleQuoteLiteralInSelect_true() {
 
         String statement = """
