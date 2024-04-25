@@ -1,12 +1,13 @@
 package com.sql.util.sqlparser.model;
 
+import com.sql.util.sqlparser.parsers.IterableComponent;
 import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @ToString
-public class Select extends QueryComponent {
+public class Select extends QueryComponent implements IterableComponent {
 
     private List<SelectExpression> selectExpressions;
 

@@ -52,7 +52,7 @@ class SqlParserServiceSelectTest {
                 HAVING COUNT(*) > 1 AND SUM(book.cost) > 500
                 LIMIT 10;""";
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
         assertEquals(6, query.sizeOfStatementParts());
     }

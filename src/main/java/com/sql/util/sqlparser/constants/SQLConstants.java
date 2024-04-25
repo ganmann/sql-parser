@@ -31,7 +31,7 @@ public class SQLConstants {
     public final Set<Character> OPEN_CHARACTERS = OPEN_CLOSED_CHARACTER_MAP.keySet();
     public final Set<Character> OPEN_CLOSED_SAME_CHARACTERS = Set.of('"','\'');
 
-    public final String REGEX_COMPARISONS = "\\s+(=|>|<|>=|<=|<>|like|is null)\\s+";
+    public final String REGEX_COMPARISONS = "\\s+like\\s+|\\s+is null(\\s+|$)|<>|>=|<=|=|>|<";
 
     public final List<String> LOGICAL_OPERATORS_TOKENS = List.of("and", "or", "xor");
 

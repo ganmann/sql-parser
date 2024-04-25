@@ -6,13 +6,20 @@ import com.sql.util.sqlparser.model.Predicate;
 import com.sql.util.sqlparser.model.Query;
 import com.sql.util.sqlparser.model.enums.JoinType;
 import com.sql.util.sqlparser.model.enums.LogicalOperator;
+import com.sql.util.sqlparser.service.SqlParserService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 public class SqlParserServiceJoinTest {
 
 
+    @Autowired
+    SqlParserService sqlParserService;
+    
     @Test
     void parseQuery_LeftJoin() {
         String statement = """
@@ -20,11 +27,11 @@ public class SqlParserServiceJoinTest {
                 FROM author\s
                 LEFT JOIN book ON author.id = book.author_id;""";
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
         assertEquals(1, query.getJoins().getJoinClauses().size());
 
-        JoinClause joinClause = query.getJoins().getJoinClauses().get(0);
+        JoinClause joinClause = query.getJoins().getJoinClauses().getFirst();
         assertEquals(JoinType.LEFT_JOIN, joinClause.getJoinType());
         assertEquals("book", joinClause.getTable().getTableName());
         assertFalse(joinClause.getJoinKeys().hasNextPredicate());
@@ -42,7 +49,7 @@ public class SqlParserServiceJoinTest {
                 RIGHT JOIN course ON (course.id = book.course_id)\s
                 LIMIT 10;""";
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
         assertEquals(2, query.getJoins().getJoinClauses().size());
 
         JoinClause joinClause1 = query.getJoins().getJoinClauses().get(0);
@@ -98,10 +105,10 @@ public class SqlParserServiceJoinTest {
                         AND orders.product_id = order_items.product_id;\s
                         """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
         assertEquals(1, query.getJoins().getJoinClauses().size());
 
-        JoinClause joinClause = query.getJoins().getJoinClauses().get(0);
+        JoinClause joinClause = query.getJoins().getJoinClauses().getFirst();
 
         assertEquals(JoinType.JOIN, joinClause.getJoinType());
         assertEquals("order_items", joinClause.getTable().getTableName());
@@ -133,10 +140,10 @@ public class SqlParserServiceJoinTest {
                              XOR orders.amount > 1000;
                         """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
         assertEquals(1, query.getJoins().getJoinClauses().size());
 
-        JoinClause joinClause = query.getJoins().getJoinClauses().get(0);
+        JoinClause joinClause = query.getJoins().getJoinClauses().getFirst();
 
         assertEquals(JoinType.FULL_JOIN, joinClause.getJoinType());
         assertEquals("customers", joinClause.getTable().getTableName());
@@ -180,7 +187,7 @@ public class SqlParserServiceJoinTest {
                 RIGHT JOIN course ON (course.id = book.course_id)\s
                 LIMIT 10;""";
 
-        assertThrows(SqlValidationException.class, () -> new SqlParserServiceImpl().parse(statement));
+        assertThrows(SqlValidationException.class, () -> sqlParserService.parseSelectStatement(statement));
 
     }
 
@@ -194,10 +201,10 @@ public class SqlParserServiceJoinTest {
                 """;
 
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
         assertEquals(1, query.getJoins().getJoinClauses().size());
 
-        JoinClause joinClause = query.getJoins().getJoinClauses().get(0);
+        JoinClause joinClause = query.getJoins().getJoinClauses().getFirst();
 
         assertEquals(JoinType.RIGHT_JOIN, joinClause.getJoinType());
         assertEquals("c", joinClause.getTable().getAlias());

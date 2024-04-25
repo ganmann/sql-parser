@@ -62,7 +62,7 @@ public class SQLUtils {
 
         // check nested query
         if (SQLUtils.isNestedQuery(queryPart)) {
-            table.setNestedQuery(parseNestedQuery(SQLUtils.substrNestedQuery(queryPart)));
+            table.setNestedQuery(parseQuery(SQLUtils.substrNestedQuery(queryPart)));
             table.setAlias(SQLUtils.parseAlias(queryPart));
             return table;
         }
@@ -114,7 +114,7 @@ public class SQLUtils {
         return null;
     }
 
-    public Query parseNestedQuery(String nestedQuery) {
+    public Query parseQuery(String nestedQuery) {
         QueryParser parser = new QueryParser(nestedQuery);
         parser.parseHighLevel();
         parser.parseQueryComponents();
@@ -226,13 +226,15 @@ public class SQLUtils {
 
             MatchResult comparisonPatternResult = comparisonPatterns.matcher(predicateString).results().findFirst().orElse(null);
             if (comparisonPatternResult != null) {
-                String comparisonOperator = predicateString.substring(comparisonPatternResult.start(), comparisonPatternResult.end()).trim();
+                String comparisonOperator = comparisonPatternResult.group().trim();
                 predicate.setComparison(comparisonOperator);
                 String[] predicateParts = comparisonPatterns.split(predicateString);
                 PredicateOperand leftOperand = parsePredicateOperand(predicateParts[0]);
-                PredicateOperand rightOperand = parsePredicateOperand(predicateParts[1]);
                 predicate.setLeftOperand(leftOperand);
-                predicate.setRightOperand(rightOperand);
+                if (predicateParts.length > 1) {
+                    PredicateOperand rightOperand = parsePredicateOperand(predicateParts[1]);
+                    predicate.setRightOperand(rightOperand);
+                }
             }
         }
 

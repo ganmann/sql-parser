@@ -32,7 +32,7 @@ public class SelectParser extends Parser {
             return selectExpression;
         }
         if (SQLUtils.isNestedQuery(queryPart)) {
-            selectExpression.setNestedQuery(SQLUtils.parseNestedQuery(SQLUtils.substrNestedQuery(queryPart)));
+            selectExpression.setNestedQuery(SQLUtils.parseQuery(SQLUtils.substrNestedQuery(queryPart)));
             selectExpression.setAlias(SQLUtils.parseAlias(queryPart));
             return selectExpression;
         }

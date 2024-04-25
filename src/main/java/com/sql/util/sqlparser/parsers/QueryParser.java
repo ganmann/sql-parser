@@ -55,6 +55,7 @@ public class QueryParser {
             }
             case WhereClause whereClause -> {
                 query.setWhereClause(whereClause);
+                subpartParsers.add(new WhereParser());
             }
             case Having having -> {
                 query.setHaving(having);

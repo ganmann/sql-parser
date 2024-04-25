@@ -1,5 +1,6 @@
 package com.sql.util.sqlparser.model;
 
+import com.sql.util.sqlparser.parsers.IterableComponent;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,7 +11,7 @@ import java.util.List;
 @ToString
 @Getter
 @Setter
-public class From extends QueryComponent {
+public class From extends QueryComponent implements IterableComponent {
 
     public From(String initialStatement) {
         super(initialStatement);

@@ -23,9 +23,9 @@ public class SqlParserServiceFromTest {
                 FROM author
                 """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
+        assertEquals("author", query.getFrom().getTables().getFirst().getTableName());
     }
 
     @Test
@@ -36,9 +36,9 @@ public class SqlParserServiceFromTest {
                 FROM author;
                 """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
+        assertEquals("author", query.getFrom().getTables().getFirst().getTableName());
     }
 
     @Test
@@ -49,10 +49,10 @@ public class SqlParserServiceFromTest {
                 FROM author auth
                 """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
-        assertEquals("auth", query.getFrom().getTables().iterator().next().getAlias());
+        assertEquals("author", query.getFrom().getTables().getFirst().getTableName());
+        assertEquals("auth", query.getFrom().getTables().getFirst().getAlias());
     }
 
     @Test
@@ -62,11 +62,11 @@ public class SqlParserServiceFromTest {
                 select a_alias.id, (select count(*) from b where b.id=a_alias.id) t1 from (select * from A) a_alias
                 """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertTrue(query.getFrom().getTables().iterator().next().isNestedQuery());
-        assertEquals("a_alias", query.getFrom().getTables().iterator().next().getAlias());
-        assertEquals("A", query.getFrom().getTables().iterator().next().getNestedQuery().getFrom().getTables().iterator().next().getTableName());
+        assertTrue(query.getFrom().getTables().getFirst().isNestedQuery());
+        assertEquals("a_alias", query.getFrom().getTables().getFirst().getAlias());
+        assertEquals("A", query.getFrom().getTables().getFirst().getNestedQuery().getFrom().getTables().getFirst().getTableName());
 
     }
 
@@ -78,10 +78,10 @@ public class SqlParserServiceFromTest {
                 FROM author as auth
                 """;
 
-        Query query = new SqlParserServiceImpl().parse(statement);
+        Query query = sqlParserService.parseSelectStatement(statement);
 
-        assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
-        assertEquals("auth", query.getFrom().getTables().iterator().next().getAlias());
+        assertEquals("author", query.getFrom().getTables().getFirst().getTableName());
+        assertEquals("auth", query.getFrom().getTables().getFirst().getAlias());
 
     }
 }

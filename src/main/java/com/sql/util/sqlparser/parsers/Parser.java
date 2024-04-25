@@ -31,24 +31,26 @@ public abstract class Parser {
         int pointer = startElementPointer;
         char currentChar;
 
-        while (i < statement.length()) {
+        if (queryComponent instanceof IterableComponent) {
+            while (i < statement.length()) {
 
-            currentChar = statement.charAt(i);
-            int finalI = i;
-            String matchedPattern = tokens.stream()
-                    .filter(token -> SQLUtils.checkTokenMatch.test(statement.substring(finalI), token))
-                    .findFirst().orElse("");
+                currentChar = statement.charAt(i);
+                int finalI = i;
+                String matchedPattern = tokens.stream()
+                        .filter(token -> SQLUtils.checkTokenMatch.test(statement.substring(finalI), token))
+                        .findFirst().orElse("");
 
-            if (!matchedPattern.isEmpty()) {
-                parseQueryComponentElement(queryComponent, statement.substring(pointer, i));
-                pointer = i + 1;
-                i += matchedPattern.length();
-            } else if (SQLConstants.OPEN_CHARACTERS.contains(currentChar)) {
-                i = SQLUtils.goToCloseCharacter(statement, i);
+                if (!matchedPattern.isEmpty()) {
+                    parseQueryComponentElement(queryComponent, statement.substring(pointer, i));
+                    pointer = i + 1;
+                    i += matchedPattern.length();
+                } else if (SQLConstants.OPEN_CHARACTERS.contains(currentChar)) {
+                    i = SQLUtils.goToCloseCharacter(statement, i);
+                }
+                i++;
             }
-            i++;
         }
-        parseQueryComponentElement(queryComponent, statement.substring(pointer, i));
+        parseQueryComponentElement(queryComponent, statement.substring(pointer));
     }
 
 }
