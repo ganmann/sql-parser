@@ -28,7 +28,6 @@ public class SqlParserServiceFromTest {
         assertEquals("author", query.getFrom().getTables().iterator().next().getTableName());
     }
 
-    // fix case with ;
     @Test
     void parseStatement_SelectFromWithComma_TableAuthor() {
 

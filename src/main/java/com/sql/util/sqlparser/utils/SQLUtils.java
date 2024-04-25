@@ -7,7 +7,6 @@ import com.sql.util.sqlparser.parsers.QueryParser;
 import lombok.experimental.UtilityClass;
 
 
-import java.util.List;
 import java.util.Stack;
 import java.util.function.BiPredicate;
 import java.util.regex.MatchResult;
@@ -211,7 +210,7 @@ public class SQLUtils {
         String predicateString = predicateStringWithNextLogicalOperator;
 
         MatchResult logicalOperatorMatchResult = Pattern.compile("(or|and|xor)$", Pattern.CASE_INSENSITIVE)
-                .matcher(predicateStringWithNextLogicalOperator).results().findFirst().orElse(null);;
+                .matcher(predicateStringWithNextLogicalOperator).results().findFirst().orElse(null);
         if (logicalOperatorMatchResult != null) {
             logicalOperator = predicateStringWithNextLogicalOperator.substring(logicalOperatorMatchResult.start()).trim();
             predicateString = predicateStringWithNextLogicalOperator.substring(0, logicalOperatorMatchResult.start()).trim();

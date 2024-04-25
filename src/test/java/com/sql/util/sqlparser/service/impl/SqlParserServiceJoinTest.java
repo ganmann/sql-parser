@@ -5,11 +5,32 @@ import com.sql.util.sqlparser.model.JoinClause;
 import com.sql.util.sqlparser.model.Predicate;
 import com.sql.util.sqlparser.model.Query;
 import com.sql.util.sqlparser.model.enums.JoinType;
+import com.sql.util.sqlparser.model.enums.LogicalOperator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SqlParserServiceJoinTest {
+
+
+    @Test
+    void parseQuery_LeftJoin() {
+        String statement = """
+                SELECT author.name\s
+                FROM author\s
+                LEFT JOIN book ON author.id = book.author_id;""";
+
+        Query query = new SqlParserServiceImpl().parse(statement);
+
+        assertEquals(1, query.getJoins().getJoinClauses().size());
+
+        JoinClause joinClause = query.getJoins().getJoinClauses().get(0);
+        assertEquals(JoinType.LEFT_JOIN, joinClause.getJoinType());
+        assertEquals("book", joinClause.getTable().getTableName());
+        assertFalse(joinClause.getJoinKeys().hasNextPredicate());
+        assertEquals("author_id", joinClause.getJoinKeys().getRightOperand().getColumn().getColumnName());
+
+    }
 
     @Test
     void parseQuery_leftAndRightJoins() {
@@ -91,7 +112,7 @@ public class SqlParserServiceJoinTest {
         assertTrue(predicate.getRightOperand().isColumn());
 
         assertTrue(predicate.hasNextPredicate());
-        assertEquals("AND", predicate.getPredicateRelation().getLogicalOperator());
+        assertEquals(LogicalOperator.AND, predicate.getPredicateRelation().getLogicalOperator());
 
         Predicate predicate2 = predicate.getPredicateRelation().getPredicate();
         assertFalse(predicate2.isNestedPredicate());
@@ -122,7 +143,7 @@ public class SqlParserServiceJoinTest {
 
         Predicate predicate1 = joinClause.getJoinKeys();
         assertTrue(predicate1.hasNextPredicate());
-        assertEquals("and", predicate1.getPredicateRelation().getLogicalOperator());
+        assertEquals(LogicalOperator.AND, predicate1.getPredicateRelation().getLogicalOperator());
 
         Predicate predicate2 = predicate1.getPredicateRelation().getPredicate();
         assertTrue(predicate2.isNestedPredicate());
@@ -132,12 +153,12 @@ public class SqlParserServiceJoinTest {
         assertEquals("city", predicate2Nested.getLeftOperand().getColumn().getColumnName());
         assertTrue(predicate2Nested.getRightOperand().isExpression());
         assertTrue(predicate2Nested.hasNextPredicate());
-        assertEquals("OR", predicate2Nested.getPredicateRelation().getLogicalOperator());
+        assertEquals(LogicalOperator.OR, predicate2Nested.getPredicateRelation().getLogicalOperator());
         assertTrue(predicate2Nested.getPredicateRelation().getPredicate().getLeftOperand().isColumn());
         assertTrue(predicate2Nested.getPredicateRelation().getPredicate().getRightOperand().isExpression());
 
         assertTrue(predicate2.hasNextPredicate());
-        assertEquals("XOR", predicate2.getPredicateRelation().getLogicalOperator());
+        assertEquals(LogicalOperator.XOR, predicate2.getPredicateRelation().getLogicalOperator());
 
         Predicate predicate3 = predicate2.getPredicateRelation().getPredicate();
         assertTrue(predicate3.getLeftOperand().isColumn());
@@ -163,7 +184,35 @@ public class SqlParserServiceJoinTest {
 
     }
 
+    @Test
+    void parseQuery_rightOuterJoinTwoPredicatesWithLike() {
+
+        String statement = """
+                SELECT author.name, count(book.id), sum(book.cost)\s
+                FROM author a\s
+                right outer join course c ON c.author_id = a.id and c.name like 'math%'
+                """;
 
 
+        Query query = new SqlParserServiceImpl().parse(statement);
+        assertEquals(1, query.getJoins().getJoinClauses().size());
+
+        JoinClause joinClause = query.getJoins().getJoinClauses().get(0);
+
+        assertEquals(JoinType.RIGHT_JOIN, joinClause.getJoinType());
+        assertEquals("c", joinClause.getTable().getAlias());
+
+        Predicate predicate1 = joinClause.getJoinKeys();
+        assertTrue(predicate1.hasNextPredicate());
+        assertEquals(LogicalOperator.AND, predicate1.getPredicateRelation().getLogicalOperator());
+
+        Predicate predicate2 = predicate1.getPredicateRelation().getPredicate();
+        assertEquals("like", predicate2.getComparison());
+        assertEquals("c", predicate2.getLeftOperand().getColumn().getTable());
+        assertEquals("name", predicate2.getLeftOperand().getColumn().getColumnName());
+        assertTrue(predicate2.getRightOperand().isExpression());
+        assertEquals("'math%'", predicate2.getRightOperand().getExpression());
+
+    }
 
 }

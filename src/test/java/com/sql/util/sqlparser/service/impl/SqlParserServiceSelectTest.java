@@ -1,15 +1,13 @@
 package com.sql.util.sqlparser.service.impl;
 
 import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
-import com.sql.util.sqlparser.model.From;
-import com.sql.util.sqlparser.model.Query;
-import com.sql.util.sqlparser.model.SelectExpression;
-import com.sql.util.sqlparser.model.Table;
+import com.sql.util.sqlparser.model.*;
 import com.sql.util.sqlparser.service.SqlParserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,8 +54,6 @@ class SqlParserServiceSelectTest {
 
         Query query = new SqlParserServiceImpl().parse(statement);
 
-//        query.forEach((str) -> System.out.println("[part]: " + str));
-
         assertEquals(6, query.sizeOfStatementParts());
     }
 
@@ -73,8 +69,6 @@ class SqlParserServiceSelectTest {
                 LIMIT 10;""";
 
         Query query = new SqlParserServiceImpl().parse(statement);
-
-//        parts.forEach((str) -> System.out.println("[part]: " + str));
 
         assertEquals(6, query.sizeOfStatementParts());
     }
@@ -104,7 +98,8 @@ class SqlParserServiceSelectTest {
         assertEquals(2, query.sizeOfStatementParts());
         assertEquals(2, query.getSelect().getSelectExpressions().size());
         assertEquals(1, query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).count());
-        assertEquals(1, query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).findFirst().get().getNestedQuery().getSelect().getSelectExpressions().size());
+        assertEquals(1, query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).findFirst()
+                .map(SelectExpression::getNestedQuery).map(Query::getSelect).map(Select::getSelectExpressions).orElse(Collections.emptyList()).size());
     }
 
     @Test
@@ -119,7 +114,8 @@ class SqlParserServiceSelectTest {
         assertEquals(2, query.sizeOfStatementParts());
         assertEquals(2, query.getSelect().getSelectExpressions().size());
         assertEquals(1, query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).count());
-        assertEquals(2, query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).findFirst().get().getNestedQuery().getSelect().getSelectExpressions().size());
+        assertEquals(2, query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).findFirst()
+                .map(SelectExpression::getNestedQuery).map(Query::getSelect).map(Select::getSelectExpressions).orElse(Collections.emptyList()).size());
     }
 
     @Test
@@ -134,7 +130,8 @@ class SqlParserServiceSelectTest {
         assertEquals(2, query.sizeOfStatementParts());
         assertEquals(2, query.getSelect().getSelectExpressions().size());
         assertEquals(1, query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).count());
-        assertEquals("t1", query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).findFirst().get().getAlias());
+        assertEquals("t1", query.getSelect().getSelectExpressions().stream().filter(SelectExpression::isNestedQuery).findFirst()
+                .map(SelectExpression::getAlias).orElse(""));
     }
 
     @Test

@@ -4,8 +4,6 @@ import com.sql.util.sqlparser.model.enums.JoinType;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 
 @Getter
 @Setter

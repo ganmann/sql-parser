@@ -1,5 +1,6 @@
 package com.sql.util.sqlparser.model;
 
+import com.sql.util.sqlparser.model.enums.LogicalOperator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,9 +9,9 @@ import lombok.Setter;
 public class PredicateRelation {
 
     public PredicateRelation(String logicalOperator) {
-        this.logicalOperator = logicalOperator;
+        this.logicalOperator = LogicalOperator.getLogicalOperator(logicalOperator);
     }
 
-    String logicalOperator;
+    LogicalOperator logicalOperator;
     Predicate predicate;
 }
