@@ -13,5 +13,5 @@ public class PredicateRelation {
     }
 
     LogicalOperator logicalOperator;
-    Predicate predicate;
+    Predicate nextPredicate;
 }

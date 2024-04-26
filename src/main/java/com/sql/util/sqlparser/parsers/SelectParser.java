@@ -25,12 +25,7 @@ public class SelectParser extends Parser {
 
     public SelectExpression parseColumn(String queryPart) {
         SelectExpression selectExpression = new SelectExpression(queryPart);
-        if (SQLUtils.checkSelectFromAll(queryPart)) {
-            Column column = new Column();
-            column.setColumnName("*");
-            selectExpression.setColumn(column);
-            return selectExpression;
-        }
+
         if (SQLUtils.isNestedQuery(queryPart)) {
             selectExpression.setNestedQuery(SQLUtils.parseQuery(SQLUtils.substrNestedQuery(queryPart)));
             selectExpression.setAlias(SQLUtils.parseAlias(queryPart));
@@ -40,7 +35,7 @@ public class SelectParser extends Parser {
         queryPart = queryPart.trim();
 
         // check function
-        if (queryPart.matches("^\\b\\w+\\(.\\)$")) {
+        if (SQLUtils.isFunction(queryPart)) {
             selectExpression.setFunction(true);
             return selectExpression;
         }

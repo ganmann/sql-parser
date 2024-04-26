@@ -4,7 +4,6 @@ import lombok.*;
 
 @Data
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
 public class Query {
     private String initialStatement;
@@ -14,7 +13,7 @@ public class Query {
     private WhereClause whereClause;
     private GroupBy groupBy;
     private Having having;
-    private Sort sortColumns;
+    private OrderBy orderBy;
     private Integer limit;
     private Integer offset;
 
@@ -30,7 +29,7 @@ public class Query {
         if (whereClause != null) size++;
         if (groupBy != null) size++;
         if (having != null) size++;
-        if (sortColumns != null) size++;
+        if (orderBy != null) size++;
         if (limit != null) size++;
         if (offset != null) size++;
         return size;

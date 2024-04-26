@@ -13,6 +13,8 @@ public class PredicateOperand extends QueryComponent {
 
     Column column;
     String expression;
+    String function;
+    Query nestedQuery;
 
     public boolean isColumn() {
         return column != null;
@@ -20,5 +22,13 @@ public class PredicateOperand extends QueryComponent {
 
     public boolean isExpression() {
         return expression != null;
+    }
+
+    public boolean isFunction() {
+        return function != null;
+    }
+
+    public boolean isNestedQuery() {
+        return nestedQuery != null;
     }
 }

@@ -19,7 +19,8 @@ public class SQLConstants {
             "group by", List.of("having", "order by", "limit", "offset"),
             "having", List.of("order by", "limit", "offset"),
             "order by", List.of("limit", "offset"),
-            "limit", List.of("offset")
+            "limit", List.of("offset"),
+            "offset", Collections.emptyList()
     );
     public final Map<Character, Character> OPEN_CLOSED_CHARACTER_MAP = Map.of(
             '(', ')',

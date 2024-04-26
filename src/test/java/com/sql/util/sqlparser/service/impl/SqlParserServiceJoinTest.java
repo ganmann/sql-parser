@@ -121,7 +121,7 @@ public class SqlParserServiceJoinTest {
         assertTrue(predicate.hasNextPredicate());
         assertEquals(LogicalOperator.AND, predicate.getPredicateRelation().getLogicalOperator());
 
-        Predicate predicate2 = predicate.getPredicateRelation().getPredicate();
+        Predicate predicate2 = predicate.getPredicateRelation().getNextPredicate();
         assertFalse(predicate2.isNestedPredicate());
         assertEquals("=", predicate2.getComparison());
         assertTrue(predicate2.getLeftOperand().isColumn());
@@ -152,7 +152,7 @@ public class SqlParserServiceJoinTest {
         assertTrue(predicate1.hasNextPredicate());
         assertEquals(LogicalOperator.AND, predicate1.getPredicateRelation().getLogicalOperator());
 
-        Predicate predicate2 = predicate1.getPredicateRelation().getPredicate();
+        Predicate predicate2 = predicate1.getPredicateRelation().getNextPredicate();
         assertTrue(predicate2.isNestedPredicate());
         Predicate predicate2Nested = predicate2.getNestedPredicate();
         assertTrue(predicate2Nested.getLeftOperand().isColumn());
@@ -161,13 +161,13 @@ public class SqlParserServiceJoinTest {
         assertTrue(predicate2Nested.getRightOperand().isExpression());
         assertTrue(predicate2Nested.hasNextPredicate());
         assertEquals(LogicalOperator.OR, predicate2Nested.getPredicateRelation().getLogicalOperator());
-        assertTrue(predicate2Nested.getPredicateRelation().getPredicate().getLeftOperand().isColumn());
-        assertTrue(predicate2Nested.getPredicateRelation().getPredicate().getRightOperand().isExpression());
+        assertTrue(predicate2Nested.getPredicateRelation().getNextPredicate().getLeftOperand().isColumn());
+        assertTrue(predicate2Nested.getPredicateRelation().getNextPredicate().getRightOperand().isExpression());
 
         assertTrue(predicate2.hasNextPredicate());
         assertEquals(LogicalOperator.XOR, predicate2.getPredicateRelation().getLogicalOperator());
 
-        Predicate predicate3 = predicate2.getPredicateRelation().getPredicate();
+        Predicate predicate3 = predicate2.getPredicateRelation().getNextPredicate();
         assertTrue(predicate3.getLeftOperand().isColumn());
         assertEquals("orders", predicate3.getLeftOperand().getColumn().getTable());
         assertEquals("amount", predicate3.getLeftOperand().getColumn().getColumnName());
@@ -213,7 +213,7 @@ public class SqlParserServiceJoinTest {
         assertTrue(predicate1.hasNextPredicate());
         assertEquals(LogicalOperator.AND, predicate1.getPredicateRelation().getLogicalOperator());
 
-        Predicate predicate2 = predicate1.getPredicateRelation().getPredicate();
+        Predicate predicate2 = predicate1.getPredicateRelation().getNextPredicate();
         assertEquals("like", predicate2.getComparison());
         assertEquals("c", predicate2.getLeftOperand().getColumn().getTable());
         assertEquals("name", predicate2.getLeftOperand().getColumn().getColumnName());

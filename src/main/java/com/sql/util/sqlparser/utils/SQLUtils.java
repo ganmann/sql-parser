@@ -7,6 +7,7 @@ import com.sql.util.sqlparser.parsers.QueryParser;
 import lombok.experimental.UtilityClass;
 
 
+import java.util.Optional;
 import java.util.Stack;
 import java.util.function.BiPredicate;
 import java.util.regex.MatchResult;
@@ -35,13 +36,20 @@ public class SQLUtils {
         return matcher.matches();
     };
 
+    public Query parseQuery(String query) {
+        QueryParser parser = new QueryParser(query);
+        parser.parseHighLevel();
+        parser.parseQueryComponents();
+        return parser.getQuery();
+    }
+
     // skip constructions like (...)  "..."
     public static int goToCloseCharacter(String statement, int i) {
         Stack<Character> openCharactersStack = new Stack<>();
         char currentChar = statement.charAt(i);
         char lastOpenChar = currentChar;
         openCharactersStack.push(currentChar);
-        while (openCharactersStack.size() > 0 && i < statement.length() - 1) {
+        while (!openCharactersStack.isEmpty() && i < statement.length() - 1) {
             currentChar = statement.charAt(i+1);
             if (!SQLConstants.OPEN_CLOSED_SAME_CHARACTERS.contains(lastOpenChar) && SQLConstants.OPEN_CHARACTERS.contains(currentChar)) {
                 openCharactersStack.push(currentChar);
@@ -95,8 +103,14 @@ public class SQLUtils {
 
     public Column parseColumn(String queryPart) {
 
+        if (SQLUtils.checkKeywordAll(queryPart)) {
+            Column column = new Column();
+            column.setColumnName("*");
+            return column;
+        }
+
         // check 'column' pattern
-        if (queryPart.matches("^[a-zA-Z0-9]*[a-zA-Z][a-zA-Z0-9]*$")) {
+        if (queryPart.matches("^[a-zA-Z0-9_]*[a-zA-Z][a-zA-Z0-9_]*$")) {
             Column column = new Column();
             column.setColumnName(queryPart.trim());
             return column;
@@ -114,11 +128,21 @@ public class SQLUtils {
         return null;
     }
 
-    public Query parseQuery(String nestedQuery) {
-        QueryParser parser = new QueryParser(nestedQuery);
-        parser.parseHighLevel();
-        parser.parseQueryComponents();
-        return parser.getQuery();
+    public boolean isFunction(String queryPart) {
+        return queryPart.matches("^\\b\\w+\\(.+\\)$");
+    }
+
+    public String substrFunctionName(String queryPart) {
+        int openSymbol = queryPart.indexOf("(");
+        return queryPart.substring(0, openSymbol);
+    }
+
+    public String substrFunctionArguments(String queryPart) {
+        return substrNestedQuery(queryPart);
+    }
+
+    public boolean isInteger(String queryPart) {
+        return Pattern.compile("\\d+").matcher(queryPart).matches();
     }
 
     public Integer parseInteger(String queryPart) {
@@ -126,17 +150,17 @@ public class SQLUtils {
         if (matcher.find()) {
             return Integer.parseInt(matcher.group());
         }
-        throw new SqlValidationException();
+        throw new NumberFormatException();
     }
 
     public boolean checkStatementHasSelectFrom(String queryPart) {
         queryPart = queryPart.trim().toLowerCase();
-        return queryPart.matches("^\\s*\\bselect\\b[\\s\\S]*?\\bfrom\\b[\\s\\S]*$");
+        return queryPart.matches("^\\s*\\bselect\\b[\\s\\S]*?\\bfrom\\b[\\s\\S]+$");
     }
 
-    public boolean checkSelectFromAll(String queryPart) {
+    public boolean checkKeywordAll(String queryPart) {
         queryPart = queryPart.trim().toLowerCase();
-        return queryPart.matches("^select\\s*\\*$");
+        return queryPart.matches("^\\s*\\*\\s*$");
     }
 
     public boolean isNestedQuery(String queryPart) {
@@ -180,7 +204,7 @@ public class SQLUtils {
                         firstPredicate = predicate;
                     }
                     if (predicateRelation != null) {
-                        predicateRelation.setPredicate(predicate);
+                        predicateRelation.setNextPredicate(predicate);
                     }
                     predicateRelation = predicate.getPredicateRelation();
 
@@ -198,7 +222,7 @@ public class SQLUtils {
             firstPredicate = predicate;
         }
         if (predicateRelation != null) {
-            predicateRelation.setPredicate(predicate);
+            predicateRelation.setNextPredicate(predicate);
         }
 
         return firstPredicate;
@@ -258,13 +282,17 @@ public class SQLUtils {
         operandPart = operandPart.trim();
         PredicateOperand predicateOperand = new PredicateOperand(operandPart);
 
+        if (SQLUtils.isFunction(operandPart)) {
+            predicateOperand.setFunction(SQLUtils.substrFunctionName(operandPart));
+            operandPart = SQLUtils.substrFunctionArguments(operandPart).trim();
+        }
 
-        Column column = SQLUtils.parseColumn(operandPart);
-
-        if (column != null) {
-            predicateOperand.setColumn(column);
-        } else {
-            predicateOperand.setExpression(operandPart);
+        if (SQLUtils.isNestedQuery(operandPart)) {
+            predicateOperand.setNestedQuery(SQLUtils.parseQuery(SQLUtils.substrNestedQuery(operandPart)));
+        } else  {
+            String finalOperandPart = operandPart;
+            Optional.ofNullable(SQLUtils.parseColumn(operandPart))
+                    .ifPresentOrElse(predicateOperand::setColumn, () -> predicateOperand.setExpression(finalOperandPart));
         }
 
         return predicateOperand;

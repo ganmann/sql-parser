@@ -21,8 +21,8 @@ public class QueryElementFactory extends AbstractQueryElementFactory {
                 return new GroupBy(statement);
             case "having":
                 return new Having(statement);
-            case "sort":
-                return new Sort(statement);
+            case "order by":
+                return new OrderBy(statement);
             case "limit":
 
             case "offset":

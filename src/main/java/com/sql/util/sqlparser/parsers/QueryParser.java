@@ -1,10 +1,12 @@
 package com.sql.util.sqlparser.parsers;
 
 import com.sql.util.sqlparser.constants.SQLConstants;
+import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
 import com.sql.util.sqlparser.model.*;
 import com.sql.util.sqlparser.model.factory.AbstractQueryElementFactory;
 import com.sql.util.sqlparser.model.factory.QueryElementFactory;
 import com.sql.util.sqlparser.utils.SQLUtils;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +19,8 @@ public class QueryParser {
 
     private static final AbstractQueryElementFactory queryElementFactory = new QueryElementFactory();
 
+    @Getter
     private final Query query;
-
-    public Query getQuery() {
-        return query;
-    }
 
     private final List<Parser> subpartParsers = new ArrayList<>();
 
@@ -29,11 +28,19 @@ public class QueryParser {
     public void setQueryElement(String statement, String partKey) {
 
         if (partKey.equals("limit")) {
-            query.setLimit(SQLUtils.parseInteger(statement));
+            try {
+                query.setLimit(SQLUtils.parseInteger(statement));
+            } catch (NumberFormatException e) {
+                throw new SqlValidationException("Incorrect limit value: " + statement.trim());
+            }
             return;
         }
         if (partKey.equals("offset")) {
-            query.setOffset(SQLUtils.parseInteger(statement));
+            try {
+                query.setOffset(SQLUtils.parseInteger(statement));
+            } catch (NumberFormatException e) {
+                throw new SqlValidationException("Incorrect offset value: " + statement.trim());
+            }
             return;
         }
         setQueryElement(queryElementFactory.createQueryElement(partKey, statement));
@@ -57,14 +64,17 @@ public class QueryParser {
                 query.setWhereClause(whereClause);
                 subpartParsers.add(new WhereParser());
             }
-            case Having having -> {
-                query.setHaving(having);
-            }
             case GroupBy groupBy -> {
                 query.setGroupBy(groupBy);
+                subpartParsers.add(new GroupByParser());
             }
-            case Sort sort -> {
-                query.setSortColumns(sort);
+            case Having having -> {
+                query.setHaving(having);
+                subpartParsers.add(new HavingParser());
+            }
+            case OrderBy orderBy -> {
+                query.setOrderBy(orderBy);
+                subpartParsers.add(new OrderByParser());
             }
             default -> {
             }
@@ -73,7 +83,7 @@ public class QueryParser {
 
     public void parseHighLevel() {
 
-        String statement = query.getInitialStatement().replaceAll("\\s+", " ");
+        String statement = query.getInitialStatement().replaceAll("--.*","").replaceAll("\\s+", " ");
         String partKey = "select";
         int i = 6;
         int pointer = 0;
