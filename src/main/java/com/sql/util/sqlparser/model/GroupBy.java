@@ -16,8 +16,8 @@ public class GroupBy extends QueryComponent implements IterableComponent {
         super(initialStatement);
     }
 
-    List<Column> columns;
-    String function;
+    private List<Column> columns;
+    private String function;
 
     public boolean isFunction() {
         return function != null;

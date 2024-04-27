@@ -3,6 +3,7 @@ package com.sql.util.sqlparser.parsers;
 import com.sql.util.sqlparser.model.*;
 import com.sql.util.sqlparser.utils.SQLUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SelectParser extends Parser {
@@ -33,6 +34,13 @@ public class SelectParser extends Parser {
         }
 
         queryPart = queryPart.trim();
+
+
+        // check for alias
+        if (queryPart.matches(".*(\\s+as|\\s+AS)\\s+\\w+$|.*(\\w+|\\))\\s+\\w+$")) {
+            selectExpression.setAlias(Arrays.stream(queryPart.split("\\s+")).toList().getLast());
+            queryPart = SQLUtils.removeAlias(queryPart);
+        }
 
         // check function
         if (SQLUtils.isFunction(queryPart)) {

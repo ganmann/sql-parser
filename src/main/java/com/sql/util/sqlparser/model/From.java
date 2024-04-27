@@ -17,9 +17,7 @@ public class From extends QueryComponent implements IterableComponent {
         super(initialStatement);
     }
 
-    // todo make private
-
-    List<Table> tables;
+    private List<Table> tables;
 
     public void addTable(Table table) {
         if (tables == null) {

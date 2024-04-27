@@ -1,6 +1,5 @@
 package com.sql.util.sqlparser.service.impl;
 
-import com.sql.util.sqlparser.errorHandling.exceptions.SqlValidationException;
 import com.sql.util.sqlparser.model.*;
 import com.sql.util.sqlparser.service.SqlParserService;
 import org.junit.jupiter.api.Test;
@@ -142,6 +141,25 @@ class SqlParserServiceSelectTest {
 
         assertEquals(3, query.getSelect().getSelectExpressions().size());
         query.getSelect().getSelectExpressions().forEach(selectExpression -> assertTrue(selectExpression.isLiteral()));
+    }
+
+    @Test
+    void parseStatement_columnWithAlias_true() {
+        String statement = """
+                select SUM(oi.quantity * oi.price) AS total_order_amount
+                from order_items oi
+                """;
+
+        Query query = new SqlParserServiceImpl().parse(statement);
+
+        assertEquals(1, query.getSelect().getSelectExpressions().size());
+        SelectExpression selectExpression = query.getSelect().getSelectExpressions().getFirst();
+        assertTrue(selectExpression.isFunction());
+        assertEquals("total_order_amount", selectExpression.getAlias());
+
+        assertEquals(1, query.getFrom().getTables().size());
+        Table table = query.getFrom().getTables().getFirst();
+        assertEquals("oi", table.getAlias());
     }
 
 }

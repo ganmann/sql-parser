@@ -137,6 +137,22 @@ public class SQLUtils {
         return queryPart.substring(0, openSymbol);
     }
 
+    public String removeAlias(String sql) {
+        if (sql == null || sql.isBlank()) {
+            return sql;
+        }
+
+        Pattern aliasPattern = Pattern.compile("\\s+(AS\\s+)?([\\w_]+)$", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = aliasPattern.matcher(sql);
+
+        if (matcher.find()) {
+            return sql.substring(0, matcher.start()).trim();
+        } else {
+            return sql;
+        }
+    }
+
+
     public String substrFunctionArguments(String queryPart) {
         return substrNestedQuery(queryPart);
     }
